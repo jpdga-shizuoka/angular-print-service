@@ -6,9 +6,6 @@ import {Router} from '@angular/router';
 })
 export class PrintService implements OnDestroy {
   private static instance: PrintService;
-  private static beforeprint(event: Event) {
-    PrintService.instance.isPrinting = true;
-  }
   private static afterprint(event: Event) {
     PrintService.instance.isPrinting = false;
     PrintService.instance.router.navigate([{ outlets: { print: null }}]);
@@ -18,13 +15,11 @@ export class PrintService implements OnDestroy {
 
   constructor(private router: Router) {
     PrintService.instance = this;
-    window.addEventListener('beforeprint', PrintService.beforeprint);
     window.addEventListener('afterprint', PrintService.afterprint);
   }
 
   ngOnDestroy() {
     window.removeEventListener('afterprint', PrintService.afterprint);
-    window.removeEventListener('beforeprint', PrintService.beforeprint);
   }
 
   printDocument(documentName: string, documentData: string[]) {
@@ -32,7 +27,8 @@ export class PrintService implements OnDestroy {
       { outlets: {
         'print': ['print', documentName, documentData.join()]
       }}],
-      { skipLocationChange: true });
+      { skipLocationChange: true })
+    .then(done => this.isPrinting = done);
   }
 
   onDataReady() {
