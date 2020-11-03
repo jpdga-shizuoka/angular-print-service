@@ -7,11 +7,8 @@ import {Router} from '@angular/router';
 export class PrintService implements OnDestroy {
   private static instance: PrintService;
   private static afterprint(event: Event) {
-    PrintService.instance.isPrinting = false;
     PrintService.instance.router.navigate([{ outlets: { print: null }}]);
   }
-
-  isPrinting = false;
 
   constructor(private router: Router) {
     PrintService.instance = this;
@@ -27,8 +24,7 @@ export class PrintService implements OnDestroy {
       { outlets: {
         'print': ['print', documentName, documentData.join()]
       }}],
-      { skipLocationChange: true })
-    .then(done => this.isPrinting = done);
+      { skipLocationChange: true });
   }
 
   onDataReady() {
