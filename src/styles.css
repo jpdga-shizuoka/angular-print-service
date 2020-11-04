@@ -1,6 +1,8 @@
 /* You can add global styles to this file, and also import other style files */
 
+@media screen {
+  .app-print {display: none;}
+}
 @media print {
-  .isPrinting > * { display: none; }
-  .isPrinting app-print-layout { display: block; }
+  .app-screen {display: none;}
 }
