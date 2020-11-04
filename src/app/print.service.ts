@@ -7,8 +7,9 @@ import {Router} from '@angular/router';
 export class PrintService implements OnDestroy {
   private static instance: PrintService;
   private static afterprint(event: Event) {
-    PrintService.instance.router.navigate([{ outlets: { print: null }}]);
+    PrintService.instance.afterprint();
   }
+  private state: 'idle' | 'done' | 'complete' = 'complete';
 
   constructor(private router: Router) {
     PrintService.instance = this;
@@ -20,6 +21,7 @@ export class PrintService implements OnDestroy {
   }
 
   printDocument(documentName: string, documentData: string[]) {
+    this.state = 'idle';
     this.router.navigate(['/',
       { outlets: {
         'print': ['print', documentName, documentData.join()]
@@ -28,6 +30,23 @@ export class PrintService implements OnDestroy {
   }
 
   onDataReady() {
-    setTimeout(() => window.print());
+    setTimeout(() => {
+      window.print();
+      this.afterprint();
+    });
+  }
+
+  private afterprint() {
+    switch (this.state) {
+      case 'idle':
+        return this.state = 'done';
+      case 'done':
+        this.state = 'complete';
+        return this.endOfPrint();
+    }
+  }
+
+  private endOfPrint() {
+    setTimeout(() => this.router.navigate([{ outlets: { print: null }}]), 1000); // any good idea?
   }
 }
