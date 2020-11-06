@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import {PrintService} from './print.service';
 
 @Component({
@@ -6,10 +6,14 @@ import {PrintService} from './print.service';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
+export class AppComponent implements OnDestroy {
   title = 'angular-print-service';
 
   constructor(public printService: PrintService) { }
+
+  ngOnDestroy() {
+    this.printService.closeDocument();
+  }
 
   onPrintInvoice() {
     const invoiceIds = ['101', '102'];
