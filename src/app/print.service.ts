@@ -5,48 +5,36 @@ import {Router} from '@angular/router';
   providedIn: 'root'
 })
 export class PrintService implements OnDestroy {
-  private static instance: PrintService;
-  private static afterprint(event: Event) {
-    PrintService.instance.afterprint();
-  }
-  private state: 'idle' | 'done' | 'complete' = 'complete';
+  private state: 'close' | 'open' = 'close';
 
   constructor(private router: Router) {
-    PrintService.instance = this;
-    window.addEventListener('afterprint', PrintService.afterprint);
   }
 
   ngOnDestroy() {
-    window.removeEventListener('afterprint', PrintService.afterprint);
+    this.closeDocument();
   }
 
   printDocument(documentName: string, documentData: string[]) {
-    this.state = 'idle';
-    this.router.navigate(['/',
-      { outlets: {
-        'print': ['print', documentName, documentData.join()]
-      }}],
-      { skipLocationChange: true });
-  }
-
-  onDataReady() {
-    setTimeout(() => {
-      window.print();
-      this.afterprint();
-    });
-  }
-
-  private afterprint() {
-    switch (this.state) {
-      case 'idle':
-        return this.state = 'done';
-      case 'done':
-        this.state = 'complete';
-        return this.endOfPrint();
+    if (this.state === 'open') {
+      this.onDataReady();
+    } else {
+      this.router.navigate(['/',
+        { outlets: {
+          'print': ['print', documentName, documentData.join()]
+        }}],
+        { skipLocationChange: true })
+      .then(result => this.state = result ? 'open' : this.state);
     }
   }
 
-  private endOfPrint() {
-    setTimeout(() => this.router.navigate([{ outlets: { print: null }}]), 1000); // any good idea?
+  onDataReady() {
+    setTimeout(() => window.print());
+  }
+
+  closeDocument() {
+    if (this.state === 'open') {
+      this.router.navigate([{ outlets: { print: null }}])
+      .then(() => this.state = 'close');
+    }
   }
 }
